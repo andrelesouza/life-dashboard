@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>Life Dashboard 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg-primary: #0a0f1e;
+      --bg-card: rgba(15, 23, 42, 0.6);
+      --border-color: rgba(51, 65, 85, 0.4);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #475569;
+      --blue: #3b82f6;
+      --blue-light: #60a5fa;
+      --blue-glow: rgba(59, 130, 246, 0.3);
+      --amber: #fbbf24;
+      --amber-glow: rgba(251, 191, 36, 0.25);
+      --sky: #7dd3fc;
+      --sky-glow: rgba(125, 211, 252, 0.3);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.5);
+      --orange: #f97316;
+      --green: #4ade80;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 1rem; }
+    @media (min-width: 640px) { .container { padding: 0 1.5rem; } }
+    @media (min-width: 1024px) { .container { padding: 0 2rem; } }
+
+    /* Header */
+    .header {
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(135deg, #0a0f1e 0%, #1a1f3e 50%, #0a0f1e 100%);
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 70% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
+    }
+    .header-content { position: relative; padding: 2.5rem 0; }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .header-badge-icon {
+      width: 2rem; height: 2rem;
+      border-radius: 0.5rem;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-badge-icon svg { width: 16px; height: 16px; color: var(--blue-light); }
+    .header-badge-text {
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .header h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .header-date { font-size: 1rem; color: var(--text-secondary); }
+
+    /* Progress Overview Grid */
+    .progress-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; padding: 2.5rem 0; }
+    @media (min-width: 1024px) { .progress-grid { grid-template-columns: 1fr 1fr; } }
+
+    .panel {
+      border-radius: 1rem;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      backdrop-filter: blur(8px);
+      padding: 1.5rem;
+    }
+    @media (min-width: 640px) { .panel { padding: 2rem; } }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .panel-header svg { width: 18px; height: 18px; }
+    .panel-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .panel-header .tag { margin-left: auto; font-size: 0.7rem; color: var(--text-muted); }
+
+    .panel-body { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+    @media (min-width: 640px) { .panel-body { flex-direction: row; gap: 2rem; } }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; width: 100%; flex: 1; }
+    .stat-box {
+      border-radius: 0.5rem;
+      background: rgba(30, 41, 59, 0.5);
+      padding: 0.75rem;
+    }
+    .stat-label {
+      font-size: 0.6rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+    .stat-value {
+      font-size: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+    .stat-sub { font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+
+    /* Progress Ring */
+    .ring-container { position: relative; flex-shrink: 0; }
+    .ring-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+
+    /* Timeline bar */
+    .timeline { margin-top: 1.5rem; }
+    .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .timeline-label { font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .timeline-value { font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); }
+    .timeline-bar { position: relative; height: 0.5rem; border-radius: 9999px; background: rgba(30, 41, 59, 0.8); overflow: hidden; }
+    .timeline-fill { position: absolute; inset: 0; border-radius: 9999px; transition: width 2s ease-out; }
+    .timeline-markers { display: flex; justify-content: space-between; margin-top: 0.25rem; }
+    .timeline-marker { font-size: 0.55rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+    .timeline-marker.active { color: var(--red); }
+
+    /* Divider */
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(71, 85, 105, 0.4), transparent); }
+
+    /* Calendar Section */
+    .section { padding: 2.5rem 0; }
+    .section-title { font-size: clamp(1.5rem, 3vw, 1.875rem); font-weight: 700; margin-bottom: 0.5rem; }
+    .section-sub { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+    /* Calendar Grid */
+    .calendar-panel { border-radius: 1rem; border: 1px solid var(--border-color); background: var(--bg-card); padding: 1rem 1.5rem; overflow-x: auto; }
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.375rem; font-size: 0.7rem; color: var(--text-secondary); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    .grid-wrapper { display: flex; }
+    .day-labels { display: flex; flex-direction: column; gap: 3px; margin-right: 0.5rem; padding-top: 22px; }
+    .day-label { height: 12px; display: flex; align-items: center; font-size: 9px; color: var(--text-muted); white-space: nowrap; }
+    .month-labels { position: relative; height: 18px; margin-bottom: 4px; }
+    .month-label { position: absolute; font-size: 9px; color: var(--text-secondary); font-weight: 500; white-space: nowrap; }
+    .dot-grid { display: flex; gap: 3px; }
+    .dot-col { display: flex; flex-direction: column; gap: 3px; }
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 2px;
+      transition: transform 0.15s;
+      cursor: default;
+    }
+    .dot:hover { transform: scale(1.4); z-index: 10; position: relative; }
+    .dot-empty { width: 12px; height: 12px; }
+    .dot-weekday { background: var(--blue); box-shadow: 0 0 3px 1px var(--blue-glow); }
+    .dot-weekend { background: var(--amber); box-shadow: 0 0 4px 1px var(--amber-glow); }
+    .dot-holiday { background: var(--sky); box-shadow: 0 0 4px 1px var(--sky-glow); }
+    .dot-today { background: var(--red); box-shadow: 0 0 6px 2px var(--red-glow); animation: pulse-glow 2s infinite; }
+    .dot-past { opacity: 0.45; }
+    .dot-future { opacity: 0.9; }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 6px 2px var(--red-glow); }
+      50% { box-shadow: 0 0 12px 4px var(--red-glow); }
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: fixed;
+      z-index: 1000;
+      pointer-events: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      display: none;
+      transform: translate(-50%, -100%);
+    }
+    .tooltip.visible { display: block; }
+    .tooltip-date { color: var(--text-primary); font-weight: 500; }
+    .tooltip-info { color: var(--text-muted); margin-top: 2px; }
+    .tooltip-holiday { color: var(--sky); margin-top: 2px; }
+    .tooltip-today { color: var(--red); margin-top: 2px; }
+    .tooltip-weekend { color: var(--amber); margin-top: 2px; }
+
+    /* Weekend & Holiday Details */
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+    @media (min-width: 640px) { .detail-grid { grid-template-columns: repeat(4, 1fr); } }
+    .detail-card {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      padding: 1rem;
+    }
+    .detail-card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .detail-card-header svg { width: 14px; height: 14px; color: var(--amber); }
+    .detail-card-value { font-size: 1.5rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--amber); }
+    .detail-card-sub { font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+
+    /* Holiday List */
+    .holiday-list-panel {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      padding: 1.25rem;
+    }
+    .holiday-list-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .holiday-list-header svg { width: 14px; height: 14px; color: var(--sky); }
+    .holiday-list-header span { font-size: 0.875rem; font-weight: 500; }
+    .holiday-list-header .count { margin-left: auto; font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+    .holiday-list { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+    @media (min-width: 640px) { .holiday-list { grid-template-columns: 1fr 1fr; } }
+    .holiday-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      background: rgba(30, 41, 59, 0.3);
+    }
+    .holiday-item.past { opacity: 0.4; }
+    .holiday-item.next { background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); }
+    .holiday-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--sky); }
+    .holiday-dot.past-dot { background: var(--text-muted); }
+    .holiday-dot.next-dot { background: var(--sky); box-shadow: 0 0 6px rgba(56, 189, 248, 0.5); }
+    .holiday-name { flex: 1; font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+    .holiday-item.next .holiday-name { color: #bae6fd; }
+    .holiday-date-text { font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); flex-shrink: 0; }
+    .holiday-item.next .holiday-date-text { color: var(--sky); }
+    .holiday-next-badge { font-size: 0.55rem; font-family: 'JetBrains Mono', monospace; color: var(--sky); flex-shrink: 0; }
+
+    /* Footer */
+    .footer {
+      padding: 2rem 0;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div class="tooltip" id="tooltip">
+    <div class="tooltip-date" id="tooltip-date"></div>
+    <div id="tooltip-extra"></div>
+    <div class="tooltip-info" id="tooltip-info"></div>
+  </div>
+
+  <script>
+    // ===== DATA =====
+    const US_HOLIDAYS_2026 = [
+      { date: "2026-01-01", name: "New Year's Day" },
+      { date: "2026-01-19", name: "Martin Luther King Jr. Day" },
+      { date: "2026-02-16", name: "Presidents' Day" },
+      { date: "2026-05-25", name: "Memorial Day" },
+      { date: "2026-06-19", name: "Juneteenth" },
+      { date: "2026-07-04", name: "Independence Day" },
+      { date: "2026-09-07", name: "Labor Day" },
+      { date: "2026-10-12", name: "Columbus Day" },
+      { date: "2026-11-11", name: "Veterans Day" },
+      { date: "2026-11-26", name: "Thanksgiving Day" },
+      { date: "2026-12-25", name: "Christmas Day" },
+    ];
+
+    const holidaySet = new Set(US_HOLIDAYS_2026.map(h => h.date));
+    const holidayMap = new Map(US_HOLIDAYS_2026.map(h => [h.date, h.name]));
+    const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const DAY_LABELS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+    function formatDateKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function isSameDay(a, b) {
+      return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+    }
+    function dayOfYear(d) {
+      const start = new Date(d.getFullYear(), 0, 0);
+      return Math.floor((d.getTime() - start.getTime()) / 86400000);
+    }
+
+    function generateYearDays(year = 2026) {
+      const today = new Date();
+      const days = [];
+      let currentDate = new Date(year, 0, 1);
+      const endDate = new Date(year, 11, 31);
+      while (currentDate <= endDate) {
+        const dateKey = formatDateKey(currentDate);
+        const dow = currentDate.getDay();
+        const doy = dayOfYear(currentDate);
+        days.push({
+          date: new Date(currentDate),
+          dayOfYear: doy,
+          isWeekend: dow === 0 || dow === 6,
+          isHoliday: holidaySet.has(dateKey),
+          holidayName: holidayMap.get(dateKey),
+          isToday: isSameDay(currentDate, today),
+          isPast: currentDate < today && !isSameDay(currentDate, today),
+          dayOfWeek: dow,
+        });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      return days;
+    }
+
+    function groupByWeeks(days) {
+      const weeks = [];
+      let currentWeek = [];
+      const firstDayAdj = days[0].dayOfWeek === 0 ? 6 : days[0].dayOfWeek - 1;
+      for (let i = 0; i < firstDayAdj; i++) currentWeek.push(null);
+      for (const day of days) {
+        const adj = day.dayOfWeek === 0 ? 6 : day.dayOfWeek - 1;
+        currentWeek.push(day);
+        if (adj === 6) { weeks.push(currentWeek); currentWeek = []; }
+      }
+      if (currentWeek.length > 0) weeks.push(currentWeek);
+      return weeks;
+    }
+
+    function calculateYearStats(days) {
+      const today = new Date();
+      const year = 2026;
+      const totalDays = 365;
+      const doy = dayOfYear(today);
+      const daysPassed = today.getFullYear() === year ? Math.min(doy, totalDays) : (today > new Date(year, 11, 31) ? totalDays : 0);
+      const daysRemaining = totalDays - daysPassed;
+      const yearProgressPercent = (daysPassed / totalDays) * 100;
+      const weeksToGo = Math.ceil(daysRemaining / 7);
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const holidayDates = US_HOLIDAYS_2026.map(h => ({ date: new Date(h.date + "T00:00:00"), name: h.name }));
+      const holidaysPassed = holidayDates.filter(h => h.date < todayStart).length;
+      const holidaysToGo = holidayDates.filter(h => h.date >= todayStart).length;
+      const futureHolidays = holidayDates.filter(h => h.date >= todayStart).sort((a,b) => a.date - b.date);
+      let daysUntilNextHoliday = 0, nextHolidayName = "None remaining";
+      if (futureHolidays.length > 0) {
+        daysUntilNextHoliday = Math.ceil((futureHolidays[0].date - todayStart) / 86400000);
+        nextHolidayName = futureHolidays[0].name;
+      }
+      let saturdaysPassed=0, saturdaysToGo=0, sundaysPassed=0, sundaysToGo=0;
+      for (const day of days) {
+        if (day.dayOfWeek === 6) { if (day.isPast || day.isToday) saturdaysPassed++; else saturdaysToGo++; }
+        if (day.dayOfWeek === 0) { if (day.isPast || day.isToday) sundaysPassed++; else sundaysToGo++; }
+      }
+      return { yearProgressPercent, weeksToGo, holidaysPassed, holidaysToGo, daysUntilNextHoliday, nextHolidayName, saturdaysPassed, saturdaysToGo, sundaysPassed, sundaysToGo, daysPassed, daysRemaining };
+    }
+
+    function calculateLifeStats(birthYear = 1981, targetAge = 80) {
+      const today = new Date();
+      const birthDate = new Date(birthYear, 0, 1);
+      const targetDate = new Date(birthYear + targetAge, 0, 1);
+      const totalLifeDays = Math.floor((targetDate - birthDate) / 86400000);
+      const daysLived = Math.floor((today - birthDate) / 86400000);
+      const daysLeft = Math.max(0, totalLifeDays - daysLived);
+      const weeksLived = Math.floor(daysLived / 7);
+      const weeksLeft = Math.floor(daysLeft / 7);
+      const lifePercentUsed = (daysLived / totalLifeDays) * 100;
+      const lifePercentLeft = 100 - lifePercentUsed;
+      const currentAge = Math.floor((today - birthDate) / (86400000 * 365.25));
+      return { birthYear, targetAge, currentAge, daysLived, daysLeft, weeksLived, weeksLeft, lifePercentUsed, lifePercentLeft, targetDate };
+    }
+
+    // ===== SVG RING =====
+    function createRing(percent, size, strokeWidth, color) {
+      const radius = (size - strokeWidth) / 2;
+      const circumference = 2 * Math.PI * radius;
+      const offset = circumference - (percent / 100) * circumference;
+      return `
+        <div class="ring-container" style="width:${size}px;height:${size}px;">
+          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+            <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="rgba(30,41,59,0.8)" stroke-width="${strokeWidth}" />
+            <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="none" stroke="${color}" stroke-width="${strokeWidth}"
+              stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+              transform="rotate(-90 ${size/2} ${size/2})" style="transition: stroke-dashoffset 2s ease-out;" />
+          </svg>
+          <div class="ring-label">${percent.toFixed(1)}%</div>
+        </div>`;
+    }
+
+    // ===== RENDER =====
+    function render() {
+      const today = new Date();
+      const currentDate = today.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+      const days = generateYearDays(2026);
+      const weeks = groupByWeeks(days);
+      const yearStats = calculateYearStats(days);
+      const lifeStats = calculateLifeStats(1981, 80);
+
+      // Month markers for calendar
+      const monthMarkers = [];
+      let lastMonth = -1;
+      for (let wi = 0; wi < weeks.length; wi++) {
+        for (const day of weeks[wi]) {
+          if (day && day.date) {
+            const m = day.date.getMonth();
+            if (m !== lastMonth) { monthMarkers.push({ month: m, weekIndex: wi }); lastMonth = m; break; }
+          }
+        }
+      }
+
+      const colWidth = 15; // dot(12) + gap(3)
+      const totalGridWidth = weeks.length * colWidth;
+
+      // Holiday list
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const holidayDetails = US_HOLIDAYS_2026.map(h => ({ ...h, dateObj: new Date(h.date + "T00:00:00") }));
+      const upcomingHolidays = holidayDetails.filter(h => h.dateObj >= todayStart);
+
+      let html = `
+        <!-- Header -->
+        <header class="header">
+          <div class="container header-content">
+            <div class="header-badge">
+              <div class="header-badge-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <span class="header-badge-text mono">System Active</span>
+            </div>
+            <h1>Life Dashboard</h1>
+            <p class="header-date mono">${currentDate}</p>
+          </div>
+        </header>
+
+        <!-- Progress Overview -->
+        <div class="container">
+          <div class="progress-grid">
+            <!-- Year Progress -->
+            <div class="panel">
+              <div class="panel-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <h2>Year Progress</h2>
+                <span class="tag mono">2026</span>
+              </div>
+              <div class="panel-body">
+                ${createRing(yearStats.yearProgressPercent, 140, 10, '#3b82f6')}
+                <div class="stats-grid">
+                  <div class="stat-box">
+                    <div class="stat-label mono">Days Passed</div>
+                    <div class="stat-value mono" style="color:var(--blue)">${yearStats.daysPassed}</div>
+                    <div class="stat-sub mono">${yearStats.daysRemaining} remaining</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label mono">Weeks to Go</div>
+                    <div class="stat-value mono" style="color:var(--blue)">${yearStats.weeksToGo}</div>
+                    <div class="stat-sub mono">until Dec 31</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label mono">Next Holiday</div>
+                    <div class="stat-value mono" style="color:var(--sky)">${yearStats.daysUntilNextHoliday} <span style="font-size:0.75rem;color:var(--text-muted)">days</span></div>
+                    <div class="stat-sub mono">${yearStats.nextHolidayName}</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label mono">Holidays Left</div>
+                    <div class="stat-value mono" style="color:var(--sky)">${yearStats.holidaysToGo} <span style="font-size:0.75rem;color:var(--text-muted)">of 11</span></div>
+                    <div class="stat-sub mono">${yearStats.holidaysPassed} passed</div>
+                  </div>
+                </div>
+              </div>
+              <div class="timeline">
+                <div class="timeline-header">
+                  <span class="timeline-label mono">Year Timeline</span>
+                  <span class="timeline-value mono">${yearStats.yearProgressPercent.toFixed(1)}%</span>
+                </div>
+                <div class="timeline-bar">
+                  <div class="timeline-fill" style="width:${yearStats.yearProgressPercent}%;background:linear-gradient(90deg,#1e40af,#3b82f6,#60a5fa);box-shadow:0 0 8px rgba(59,130,246,0.4);"></div>
+                </div>
+                <div class="timeline-markers">
+                  <span class="timeline-marker mono">Jan 1</span>
+                  <span class="timeline-marker mono">Dec 31</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Life Progress -->
+            <div class="panel">
+              <div class="panel-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <h2>Life Progress</h2>
+                <span class="tag mono">Born ${lifeStats.birthYear} — Target ${lifeStats.targetAge}</span>
+              </div>
+              <div class="panel-body">
+                ${createRing(lifeStats.lifePercentUsed, 140, 10, '#f97316')}
+                <div class="stats-grid">
+                  <div class="stat-box">
+                    <div class="stat-label mono">Days Left</div>
+                    <div class="stat-value mono" style="color:var(--green)">${lifeStats.daysLeft.toLocaleString()}</div>
+                    <div class="stat-sub mono">of ${(lifeStats.daysLived + lifeStats.daysLeft).toLocaleString()}</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label mono">Weeks Left</div>
+                    <div class="stat-value mono" style="color:var(--green)">${lifeStats.weeksLeft.toLocaleString()}</div>
+                    <div class="stat-sub mono">of ${(lifeStats.weeksLived + lifeStats.weeksLeft).toLocaleString()}</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label mono">Life Remaining</div>
+                    <div class="stat-value mono" style="color:var(--green)">${lifeStats.lifePercentLeft.toFixed(1)}<span style="font-size:0.75rem;color:var(--text-muted)">%</span></div>
+                    <div class="stat-sub mono">${lifeStats.targetAge - lifeStats.currentAge} years to go</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="stat-label mono">Current Age</div>
+                    <div class="stat-value mono" style="color:var(--orange)">${lifeStats.currentAge} <span style="font-size:0.75rem;color:var(--text-muted)">years</span></div>
+                    <div class="stat-sub mono">${lifeStats.daysLived.toLocaleString()} days lived</div>
+                  </div>
+                </div>
+              </div>
+              <div class="timeline">
+                <div class="timeline-header">
+                  <span class="timeline-label mono">Life Timeline</span>
+                  <span class="timeline-value mono">${lifeStats.lifePercentUsed.toFixed(1)}% complete</span>
+                </div>
+                <div class="timeline-bar">
+                  <div class="timeline-fill" style="width:${lifeStats.lifePercentUsed}%;background:linear-gradient(90deg,#f97316,#ef4444);box-shadow:0 0 8px rgba(249,115,22,0.4);"></div>
+                </div>
+                <div class="timeline-markers">
+                  <span class="timeline-marker mono">${lifeStats.birthYear}</span>
+                  <span class="timeline-marker active mono">Now (${lifeStats.currentAge}y)</span>
+                  <span class="timeline-marker mono">${lifeStats.birthYear + lifeStats.targetAge}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="container"><div class="divider"></div></div>
+
+        <!-- Calendar -->
+        <div class="container section">
+          <h2 class="section-title">2026 Calendar</h2>
+          <p class="section-sub mono">365 days — each dot is one day of your year</p>
+          <div class="calendar-panel">
+            <div class="legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blue);box-shadow:0 0 3px var(--blue-glow)"></div><span class="mono">Weekday</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--amber);box-shadow:0 0 3px var(--amber-glow)"></div><span class="mono">Weekend</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--sky);box-shadow:0 0 3px var(--sky-glow)"></div><span class="mono">Holiday</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--red);box-shadow:0 0 4px var(--red-glow)"></div><span class="mono">Today</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blue);opacity:0.45"></div><span class="mono">Past</span></div>
+            </div>
+            <div class="grid-wrapper" style="min-width:${totalGridWidth + 40}px">
+              <div class="day-labels">
+                ${DAY_LABELS.map((l, i) => `<div class="day-label mono">${i % 2 === 0 ? l : ''}</div>`).join('')}
+              </div>
+              <div style="flex:1">
+                <div class="month-labels" style="position:relative;">
+                  ${monthMarkers.map(m => `<div class="month-label mono" style="left:${m.weekIndex * colWidth}px">${MONTH_NAMES[m.month]}</div>`).join('')}
+                </div>
+                <div class="dot-grid">
+                  ${weeks.map((week, wi) => `
+                    <div class="dot-col">
+                      ${Array.from({length: 7}).map((_, di) => {
+                        const day = week[di];
+                        if (day && day.date) {
+                          let cls = 'dot';
+                          if (day.isToday) cls += ' dot-today';
+                          else if (day.isHoliday) cls += ' dot-holiday';
+                          else if (day.isWeekend) cls += ' dot-weekend';
+                          else cls += ' dot-weekday';
+                          if (day.isPast && !day.isToday) cls += ' dot-past';
+                          else if (!day.isToday) cls += ' dot-future';
+                          return `<div class="${cls}" data-day="${day.dayOfYear}" data-date="${formatDateKey(day.date)}" data-dow="${day.dayOfWeek}" data-holiday="${day.holidayName||''}" data-today="${day.isToday}" data-weekend="${day.isWeekend}"></div>`;
+                        }
+                        return '<div class="dot-empty"></div>';
+                      }).join('')}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="container"><div class="divider"></div></div>
+
+        <!-- Weekend & Holiday Details -->
+        <div class="container section">
+          <h2 class="section-title">Weekend & Holiday Details</h2>
+          <div class="detail-grid">
+            <div class="detail-card">
+              <div class="detail-card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <span class="stat-label mono">Saturdays Passed</span>
+              </div>
+              <div class="detail-card-value">${yearStats.saturdaysPassed}</div>
+              <div class="detail-card-sub mono">${yearStats.saturdaysToGo} to go</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <span class="stat-label mono">Saturdays to Go</span>
+              </div>
+              <div class="detail-card-value" style="color:#fcd34d">${yearStats.saturdaysToGo}</div>
+              <div class="detail-card-sub mono">of 52 total</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="9" x2="12" y2="2"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><line x1="16" y1="5" x2="12" y2="2" /><line x1="8" y1="5" x2="12" y2="2"/></svg>
+                <span class="stat-label mono">Sundays Passed</span>
+              </div>
+              <div class="detail-card-value">${yearStats.sundaysPassed}</div>
+              <div class="detail-card-sub mono">${yearStats.sundaysToGo} to go</div>
+            </div>
+            <div class="detail-card">
+              <div class="detail-card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6"><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="9" x2="12" y2="2"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><line x1="16" y1="5" x2="12" y2="2" /><line x1="8" y1="5" x2="12" y2="2"/></svg>
+                <span class="stat-label mono">Sundays to Go</span>
+              </div>
+              <div class="detail-card-value" style="color:#fcd34d">${yearStats.sundaysToGo}</div>
+              <div class="detail-card-sub mono">of 52 total</div>
+            </div>
+          </div>
+
+          <!-- Holiday List -->
+          <div class="holiday-list-panel">
+            <div class="holiday-list-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>2026 Federal Holidays</span>
+              <span class="count mono">${yearStats.holidaysPassed} passed · ${yearStats.holidaysToGo} remaining</span>
+            </div>
+            <div class="holiday-list">
+              ${holidayDetails.map(h => {
+                const isPast = h.dateObj < todayStart;
+                const isNext = upcomingHolidays.length > 0 && h.date === upcomingHolidays[0].date;
+                const itemCls = isPast ? 'holiday-item past' : (isNext ? 'holiday-item next' : 'holiday-item');
+                const dotCls = isPast ? 'holiday-dot past-dot' : (isNext ? 'holiday-dot next-dot' : 'holiday-dot');
+                const dateStr = h.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `<div class="${itemCls}">
+                  <div class="${dotCls}"></div>
+                  <span class="holiday-name">${h.name}</span>
+                  <span class="holiday-date-text mono">${dateStr}</span>
+                  ${isNext ? '<span class="holiday-next-badge mono">→ Next</span>' : ''}
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="container">
+          <footer class="footer">
+            <span>Life Dashboard 2026</span>
+            <span>Make every day count.</span>
+          </footer>
+        </div>
+      `;
+
+      document.getElementById('app').innerHTML = html;
+
+      // Tooltip logic
+      const tooltip = document.getElementById('tooltip');
+      const tooltipDate = document.getElementById('tooltip-date');
+      const tooltipExtra = document.getElementById('tooltip-extra');
+      const tooltipInfo = document.getElementById('tooltip-info');
+
+      document.querySelectorAll('.dot[data-day]').forEach(dot => {
+        dot.addEventListener('mouseenter', (e) => {
+          const rect = e.target.getBoundingClientRect();
+          const dateStr = dot.dataset.date;
+          const d = new Date(dateStr + 'T00:00:00');
+          tooltipDate.textContent = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+          
+          let extra = '';
+          if (dot.dataset.today === 'true') extra = '<div class="tooltip-today">Today</div>';
+          else if (dot.dataset.holiday) extra = `<div class="tooltip-holiday">${dot.dataset.holiday}</div>`;
+          else if (dot.dataset.weekend === 'true') extra = '<div class="tooltip-weekend">Weekend</div>';
+          tooltipExtra.innerHTML = extra;
+          tooltipInfo.textContent = `Day ${dot.dataset.day} of 365`;
+
+          tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+          tooltip.style.top = (rect.top - 8) + 'px';
+          tooltip.classList.add('visible');
+        });
+        dot.addEventListener('mouseleave', () => {
+          tooltip.classList.remove('visible');
+        });
+      });
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
